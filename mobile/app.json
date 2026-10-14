@@ -1,0 +1,19 @@
+{
+  "expo": {
+    "name": "Donatic",
+    "slug": "donatic-mobile",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "primaryColor": "#C2255C",
+    "web": {
+      "bundler": "metro",
+      "output": "single"
+    },
+    "extra": {
+      "apiUrl": "EXPO_PUBLIC_API_URL"
+    },
+    "plugins": [
+      "expo-asset"
+    ]
+  }
+}

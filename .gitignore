@@ -1,0 +1,16 @@
+# Python / Django
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+db.sqlite3
+
+# Env
+.env
+
+# Node / Expo (mobile is separate; listed so root checkouts stay clean)
+node_modules/
+.expo/
+
+mobile/dist/
