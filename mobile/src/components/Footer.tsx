@@ -6,7 +6,7 @@ export function Footer() {
   return (
     <View style={styles.wrap}>
       <Text style={styles.brand}>Donatic — Your Taste. Your Donatic.</Text>
-      <Text style={styles.small}>Phase 1 prototype. Demo content only — no real orders.</Text>
+      <Text style={styles.small}>Phase 2 demo. Real catalog, server prices, demo cart — no real orders yet.</Text>
     </View>
   );
 }

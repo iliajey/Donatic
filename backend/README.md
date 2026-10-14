@@ -1,13 +1,17 @@
-# Donatic API — Phase 1 Backend Foundation
+# Donatic API — Phase 2 (Catalog + Server Pricing)
 
-Minimal Django + DRF foundation. Health endpoint only; no catalog/cart/orders/auth code (out of scope).
+Django + DRF: health endpoint, real product catalog (base donuts, sauces,
+toppings) with Django Admin CRUD, public catalog API, and a
+server-authoritative composition validate/price endpoint. No
+auth/checkout/orders/payments (out of scope until Phase 3).
 
 ## Stack (pinned, verified on Python 3.14.8)
 
-From `requirements.txt` (installed 2026-10-14, all wheels installed cleanly on Python 3.14):
+From `requirements.txt`:
 
 - `Django==5.2.18`
 - `djangorestframework==3.18.3`
+- `Pillow==11.3.0` (catalog image validation only)
 - `asgiref==3.12.1`, `sqlparse==0.6.0`, `tzdata==2026.5`
 
 ## Setup (exact commands executed)
@@ -41,11 +45,42 @@ From `backend/`:
 
 ```powershell
 .\.venv\Scripts\python manage.py test --settings=config.settings.dev -v 2
-# Found 3 test(s) ... Ran 3 tests ... OK
+# Found 20 test(s) ... Ran 20 tests ... OK
 ```
 
-Tests (`apps/health/tests.py`) cover: 200 + exact JSON shape, `application/json`
-content-type, and no leakage of secrets/tracebacks in the response body.
+Tests cover: health shape/content-type/no-leak (3), catalog schema +
+active-only filtering + ordering (3), validate-price correct totals,
+base-only, client-price-ignored, hash stability, price-change (5),
+invalid compositions incl. duplicates/limits/types (5), seed idempotency +
+admin preservation (2), admin login/CRUD access (2).
+
+## Catalog & pricing (Phase 2)
+
+Models (`apps/catalog/`): `BaseDonut`, `Sauce`, `Topping` — name, unique
+slug, description, integer IRR `price` (never floats), optional image
+(jpg/jpeg/png/webp only, SVG rejected, max 5 MB), `visual_key` + `color`
+for the 2D renderer, `is_active`, `sort_order`, timestamps. Public API
+returns only active items ordered by `sort_order, name, id`.
+
+Endpoints (`/api/v1/`):
+
+- `GET catalog/` — combined builder entry point
+- `GET base-donuts/`, `GET sauces/`, `GET toppings/`
+- `POST donut-compositions/validate-price/`
+  `{"base_donut_id":1,"sauce_id":2,"topping_ids":[3,5]}` →
+  `{valid, canonical, composition_hash, breakdown, total_price}`.
+  Rules: exactly 1 active base, 0/1 active sauce, no duplicate toppings,
+  max 8 toppings. Client prices are ignored; the `dn_*` hash identifies
+  the composition, not a price quote.
+
+Seed (idempotent demo data — 4 bases, 3 sauces, 8 toppings):
+
+```powershell
+.\.venv\Scripts\python manage.py seed_catalog --settings=config.settings.dev
+```
+
+Safe to rerun: keyed on slug, never duplicates, never overwrites an
+admin's customized price/name/availability. Admin CRUD at `/admin/`.
 
 Prod settings also pass system checks:
 
@@ -81,6 +116,6 @@ Prod settings also pass system checks:
   project-local venv (`backend/.venv`). A `Dockerfile`/`compose.yml` can be added
   at deployment time (Python + `pip install -r backend/requirements.txt` +
   `gunicorn`, with `DATABASE_URL` pointing at managed Postgres).
-- **CORS:** no middleware installed yet (keeps deps minimal). When a
-  browser/mobile-web client needs it, add `django-cors-headers` and set
-  `CORS_ALLOWED_ORIGINS` via env (see notes in `dev.py`/`prod.py`).
+- **CORS:** dev settings include a tiny stdlib middleware
+  (`config/dev_cors.py`) allowing cross-origin GET/POST to `/api/*` for
+  local web development only. Prod has no CORS middleware (strict).

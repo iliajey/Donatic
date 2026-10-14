@@ -2,10 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { Platform, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { HomeScreen } from './src/screens/index';
-import { BuilderPreviewScreen } from './src/screens/builder-preview';
+import { BuilderScreen } from './src/screens/builder';
+import { CartScreen } from './src/screens/cart';
+import { CartProvider, useCart } from './src/features/cart';
+import { BuilderDraftProvider } from './src/features/builderDraft';
 import { colors } from './src/theme/tokens';
 
 type Dir = 'ltr' | 'rtl';
+type Route = 'home' | 'builder' | 'cart';
 
 function useWebHead() {
   useEffect(() => {
@@ -21,15 +25,16 @@ function useWebHead() {
     if (!document.querySelector('meta[name="description"]')) {
       const meta = document.createElement('meta');
       meta.name = 'description';
-      meta.content = 'Donatic Phase 1 prototype: build-your-donut storefront preview.';
+      meta.content = 'Donatic: build-your-donut storefront — customize a donut and review your cart.';
       document.head.appendChild(meta);
     }
   }, []);
 }
 
-export default function App() {
-  const [route, setRoute] = useState<'home' | 'builder-preview'>('home');
+function Shell() {
+  const [route, setRoute] = useState<Route>('home');
   const [dir, setDir] = useState<Dir>('ltr');
+  const { count } = useCart();
   useWebHead();
 
   useEffect(() => {
@@ -37,13 +42,15 @@ export default function App() {
       document.documentElement.setAttribute('dir', dir);
       document.documentElement.setAttribute('lang', dir === 'rtl' ? 'fa' : 'en');
     }
-  }, [dir ]);
+  }, [dir]);
 
   return (
     <SafeAreaView style={styles.root}>
       <StatusBar style="dark" />
       <View style={styles.dirBar}>
-        <Text style={styles.dirText}>EN primary · FA-ready tokens</Text>
+        <Text style={styles.dirText}>
+          EN primary · FA-ready tokens{count > 0 ? ` · cart: ${count}` : ''}
+        </Text>
         <Pressable
           onPress={() => setDir((d) => (d === 'ltr' ? 'rtl' : 'ltr'))}
           accessibilityRole="button"
@@ -55,12 +62,27 @@ export default function App() {
       </View>
       <ScrollView contentContainerStyle={styles.scroll} role="main">
         {route === 'home' ? (
-          <HomeScreen onGoBuilder={() => setRoute('builder-preview')} />
+          <HomeScreen
+            onGoBuilder={() => setRoute('builder')}
+            onGoCart={() => setRoute('cart')}
+          />
+        ) : route === 'builder' ? (
+          <BuilderScreen onGoHome={() => setRoute('home')} onGoCart={() => setRoute('cart')} />
         ) : (
-          <BuilderPreviewScreen onGoHome={() => setRoute('home')} />
+          <CartScreen onGoBuilder={() => setRoute('builder')} onGoHome={() => setRoute('home')} />
         )}
       </ScrollView>
     </SafeAreaView>
+  );
+}
+
+export default function App() {
+  return (
+    <CartProvider>
+      <BuilderDraftProvider>
+        <Shell />
+      </BuilderDraftProvider>
+    </CartProvider>
   );
 }
 

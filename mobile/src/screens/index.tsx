@@ -11,20 +11,26 @@ import { ProductCard } from '../components/ProductCard';
 import { Section } from '../components/Section';
 import { AppText, Heading } from '../components/Typography';
 
-export function HomeScreen({ onGoBuilder }: { onGoBuilder: () => void }) {
+export function HomeScreen({ onGoBuilder, onGoCart }: { onGoBuilder: () => void; onGoCart: () => void }) {
   return (
     <View style={styles.page}>
-      <Header route="home" onNavigate={(r) => r === 'builder-preview' && onGoBuilder()} />
+      <Header
+        route="home"
+        onNavigate={(r) => {
+          if (r === 'builder') onGoBuilder();
+          else if (r === 'cart') onGoCart();
+        }}
+      />
       <View style={styles.hero}>
         <View style={styles.heroCopy}>
-          <Badge text="Phase 1 prototype" />
+          <Badge text="Real catalog · demo cart" />
           <Heading level={1}>Build Your Donut. Your Taste. Your Donatic.</Heading>
           <AppText>
-            A playful storefront concept: pick a base, swirl a glaze, scatter toppings — and preview
-            your creation before anything real exists.
+            Pick a real base from our catalog, swirl a sauce, scatter toppings — priced live by
+            the server and saved to your cart. No checkout yet: this demo ends at the cart.
           </AppText>
           <View style={styles.ctaRow}>
-            <Button title="Try the Builder Preview" onPress={onGoBuilder} variant="primary" />
+            <Button title="Try the Donut Builder" onPress={onGoBuilder} variant="primary" />
             <Button
               title="Browse demo donuts"
               variant="secondary"
@@ -67,16 +73,16 @@ export function HomeScreen({ onGoBuilder }: { onGoBuilder: () => void }) {
 
       <Section title="Our story">
         <AppText>
-          Donatic started with a simple craving: a donut that tastes like you. This Phase 1 web
-          preview explores the brand, the motion, and the builder interaction — in English first,
-          with tokens ready for a future Farsi (RTL) pass.
+          Donatic started with a simple craving: a donut that tastes like you. Pick a base, swirl
+          a sauce, scatter toppings — the builder prices everything live, in English first, with
+          tokens ready for a future Farsi (RTL) pass.
         </AppText>
       </Section>
 
       <View style={styles.finalCta}>
-        <Heading level={2}>Hungry for a preview?</Heading>
-        <AppText>Open the prototype builder — no cart, no checkout, no real orders.</AppText>
-        <Button title="Open Builder Preview" onPress={onGoBuilder} variant="primary" />
+        <Heading level={2}>Hungry for the real thing?</Heading>
+        <AppText>Open the builder — live catalog, live prices, demo cart, no real orders yet.</AppText>
+        <Button title="Open Donut Builder" onPress={onGoBuilder} variant="primary" />
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Back to top"

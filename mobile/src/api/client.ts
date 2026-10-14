@@ -1,7 +1,23 @@
 /**
- * Typed fetch wrapper. Not wired to UI in Phase 1 (backend not required).
- * Base URL comes from EXPO_PUBLIC_API_URL.
+ * Typed fetch wrapper.
+ *
+ * Base URL resolution:
+ *  1. `EXPO_PUBLIC_API_URL` (inlined by babel-preset-expo at bundle time).
+ *  2. Safe local-development default `http://127.0.0.1:8000`.
+ *
+ * On a physical device `localhost`/`127.0.0.1` points at the device itself,
+ * so set `EXPO_PUBLIC_API_URL=http://<dev-machine-LAN-IP>:8000` and rebuild.
  */
+export const DEFAULT_DEV_API_URL = 'http://127.0.0.1:8000';
+
+function baseUrl(): string {
+  let fromEnv: string | undefined;
+  if (typeof process !== 'undefined' && process.env) {
+    fromEnv = process.env.EXPO_PUBLIC_API_URL as string | undefined;
+  }
+  const cleaned = (fromEnv ?? '').trim().replace(/\/$/, '');
+  return cleaned || DEFAULT_DEV_API_URL;
+}
 
 export interface ApiError {
   code: string;
@@ -18,14 +34,6 @@ export class ApiRequestError extends Error {
     this.code = err.code;
     this.status = err.status;
   }
-}
-
-function baseUrl(): string {
-  const fromEnv =
-    typeof process !== 'undefined'
-      ? (process.env?.EXPO_PUBLIC_API_URL as string | undefined)
-      : undefined;
-  return (fromEnv ?? '').replace(/\/$/, '');
 }
 
 export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {

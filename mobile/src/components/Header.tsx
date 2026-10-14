@@ -3,11 +3,12 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { colors, spacing, touchTarget } from '../theme/tokens';
 import { DonutMark } from './DonutMark';
 
-export type HeaderRoute = 'home' | 'builder-preview';
+export type HeaderRoute = 'home' | 'builder' | 'cart';
 
 const NAV: Array<{ id: HeaderRoute | 'browse'; label: string }> = [
   { id: 'browse', label: 'Menu' },
-  { id: 'builder-preview', label: 'Builder Preview' },
+  { id: 'builder', label: 'Builder' },
+  { id: 'cart', label: 'Cart' },
   { id: 'home', label: 'Story' },
 ];
 
